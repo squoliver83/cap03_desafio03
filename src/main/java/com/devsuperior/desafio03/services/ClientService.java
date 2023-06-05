@@ -3,8 +3,10 @@ package com.devsuperior.desafio03.services;
 import com.devsuperior.desafio03.dto.ClientDTO;
 import com.devsuperior.desafio03.entities.Client;
 import com.devsuperior.desafio03.repositories.ClientRepository;
+import com.devsuperior.desafio03.services.exceptions.DatabaseException;
 import com.devsuperior.desafio03.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,10 +33,14 @@ public class ClientService {
 
     @Transactional
     public ClientDTO insert(ClientDTO clientDTO) {
-        Client client = new Client();
-        copyDtoToEntity(clientDTO, client);
-        client = repository.save(client);
-        return new ClientDTO(client);
+        try {
+            Client client = new Client();
+            copyDtoToEntity(clientDTO, client);
+            client = repository.save(client);
+            return new ClientDTO(client);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Falha de integridade referencial");
+        }
     }
 
     private void copyDtoToEntity(ClientDTO clientDTO, Client client) {
