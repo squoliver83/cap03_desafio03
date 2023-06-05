@@ -1,14 +1,20 @@
 package com.devsuperior.desafio03.dto;
 
 import com.devsuperior.desafio03.entities.Client;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
 public class ClientDTO {
     private Long id;
+    @NotBlank(message = "Name field can NOT be empty")
+    @Size(min = 3, message = "Name field must have at least 3 characters")
     private String name;
     private String cpf;
     private Double income;
+    @PastOrPresent(message = "Birth date can NOT be a future date")
     private LocalDate birthDate;
     private Integer children;
 
