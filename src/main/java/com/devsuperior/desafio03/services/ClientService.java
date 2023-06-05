@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -34,14 +35,10 @@ public class ClientService {
 
     @Transactional
     public ClientDTO insert(ClientDTO clientDTO) {
-        try {
-            Client client = new Client();
-            copyDtoToEntity(clientDTO, client);
-            client = repository.save(client);
-            return new ClientDTO(client);
-        } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Falha de integridade referencial");
-        }
+        Client client = new Client();
+        copyDtoToEntity(clientDTO, client);
+        client = repository.save(client);
+        return new ClientDTO(client);
     }
 
     @Transactional
@@ -56,6 +53,18 @@ public class ClientService {
         }
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Recurso não encontrado");
+        }
+        try {
+            repository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Falha de integridade referencial");
+        }
+    }
+
     private void copyDtoToEntity(ClientDTO clientDTO, Client client) {
         client.setName(clientDTO.getName());
         client.setCpf(clientDTO.getCpf());
@@ -63,4 +72,6 @@ public class ClientService {
         client.setBirthDate(clientDTO.getBirthDate());
         client.setChildren(clientDTO.getChildren());
     }
+
+
 }
